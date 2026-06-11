@@ -40,6 +40,10 @@
   .scriptbar{display:flex;flex-wrap:wrap;gap:7px;padding:11px 12px;border-top:1px solid var(--line);background:var(--panel2)}
   .scriptbar button{background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:12px;padding:6px 10px;font-weight:500}
   .scriptbar button.next{border-color:var(--accent);color:var(--accent)}
+  .scriptbar .chlbl{font-size:11px;color:var(--muted);align-self:center;margin-right:2px}
+  .scriptbar button.choice{background:var(--panel);border:1px solid var(--accent);color:var(--accent);font-weight:500}
+  .scriptbar button.choice.primary{background:var(--accent2);border-color:var(--accent2);color:#fff}
+  .scriptbar button.choice.writein{border-style:dashed;border-color:var(--muted);color:var(--muted)}
   .side{display:flex;flex-direction:column;gap:16px}
   .slots{padding:13px 16px;display:flex;flex-direction:column;gap:8px}
   .slot{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;padding:7px 11px;background:var(--bg);border:1px solid var(--line);border-radius:8px}
@@ -85,6 +89,7 @@
       <div class="composer">
         <input id="input" placeholder="Type a reply, or use the suggested turns above…" autocomplete="off"/>
         <button id="send">Send</button>
+        <button class="ghost" id="demo">▶ Demo</button>
         <button class="ghost" id="reset">Reset</button>
       </div>
       <div class="ribbon">Demo path: <b>Acme Industries</b> · buyer tenant (AP+AR) · <code>erp_priv</code> · <code>sftp_push</code> · <code>csv</code> · early payments → <code>managed_agent</code></div>
@@ -133,6 +138,7 @@ const connForErp=erp=>R.connectivityTypes.filter(c=>c.path===pathFor(erp)||c.pat
 const signingRequired=products=>products.some(p=>sigTrigger.has(p));
 
 let history=[]; let gateProfile=null; let bundle=null;
+let customSlots={}; let pendingSlot='tenant';   // pendingSlot drives the per-question choice chips; customSlots holds typed write-ins
 
 /* ── slot detection (branched) ──────────────────────────────────────────────── */
 function detTenant(t){
@@ -143,13 +149,12 @@ function detTenant(t){
 function detDirections(t,tenant){if(tenant!=='buyer')return [];const d=[];
   if(/\bap\b|accounts payable|payable/.test(t))d.push('ap');
   if(/\bar\b|accounts receivable|receivable|also a supplier|acting as.*supplier/.test(t))d.push('ar');
-  if(!d.length&&/buyer/.test(t))d.push('ap');
   return [...new Set(d)];}
 function rolesFromTenant(tenant,dirs){const r=[];
   if(tenant==='buyer'){ if(dirs.includes('ap'))r.push('ap_buyer'); if(dirs.includes('ar'))r.push('ar_seller'); }
   else if(tenant==='supplier') r.push('supplier');
   return r;}
-function detProducts(t,roles){const valid=productsForRoles(roles);const c=[];
+function detProducts(t,roles,raw){const valid=productsForRoles(roles);const c=[];
   valid.forEach(p=>{if(t.includes(p.id))c.push(p.id);});
   if(!c.length){
     if(roles.includes('ap_buyer')&&t.includes('invoice'))add(c,valid,'invoices_ap');
@@ -159,9 +164,12 @@ function detProducts(t,roles){const valid=productsForRoles(roles);const c=[];
     if(roles.includes('supplier')&&t.includes('invoice'))add(c,valid,'sup_invoice');
     if(roles.includes('supplier')&&/purchase order|\bpo\b/.test(t))add(c,valid,'sup_po');
     if(roles.includes('supplier')&&/early payment|\bep\b/.test(t))add(c,valid,'sup_ep');
-  } return [...new Set(c)];}
+  }
+  if(!raw&&customSlots.products)customSlots.products.forEach(x=>c.push(x));
+  return [...new Set(c)];}
 function add(c,valid,id){if(valid.some(p=>p.id===id))c.push(id);}
-function detErp(t){for(const e of R.erps)if(t.includes(e.id))return e.id;
+function detErp(t,raw){if(!raw&&customSlots.erp)return customSlots.erp;
+  for(const e of R.erps)if(t.includes(e.id))return e.id;
   if(/priv/.test(t))return 'erp_priv';if(/public cloud|cloud erp/.test(t))return 'erp_cloud';
   if(/legacy|\becc\b/.test(t))return 'erp_legacy';if(t.includes('oracle'))return 'oracle';return null;}
 function detScale(t){
@@ -173,7 +181,8 @@ function detScale(t){
   if(ids==null){ m=t.match(/client ?ids?\s*[:=]?\s*(?:default\s*\(?)?(\d+)/); if(m)ids=parseInt(m[1]); }
   if(ids==null && /client ?ids?\s*[:=]?\s*default|just 1 client|one client|single client|default \(1\)|1 client|1 system/.test(t)) ids=1;
   return {bu,ids};}
-function detConn(t,erp){for(const c of R.connectivityTypes)if(t.includes(c.id))return c.id;
+function detConn(t,erp,raw){if(!raw&&customSlots.conn)return customSlots.conn;
+  for(const c of R.connectivityTypes)if(t.includes(c.id))return c.id;
   if(/\bas2\b/.test(t))return 'as2';
   if(/sftp.*push|push.*sftp/.test(t))return 'sftp_push';
   if(/sftp.*pull|pull.*sftp/.test(t))return 'sftp_pull';
@@ -183,7 +192,8 @@ function detConn(t,erp){for(const c of R.connectivityTypes)if(t.includes(c.id))r
   if(ciErp.has(erp)){if(t.includes('idoc'))return 'ci_idoc';if(t.includes('odata'))return 'ci_odata';
     if(t.includes('rfc'))return 'ci_rfc';if(t.includes('managed connector'))return 'ci_idoc';}
   return null;}
-function detFmt(t){if(/peppol|bis 3|bis3/.test(t))return 'peppol_bis3';if(/cxml/.test(t))return 'cxml';
+function detFmt(t,raw){if(!raw&&customSlots.fmt)return customSlots.fmt;
+  if(/peppol|bis 3|bis3/.test(t))return 'peppol_bis3';if(/cxml/.test(t))return 'cxml';
   if(/idoc[- ]?xml/.test(t))return 'idoc_xml';if(/\bxml\b/.test(t))return 'xml';
   if(/edifact|\bedi\b/.test(t))return 'edifact';if(/fixed[- ]?length|fixed[- ]?width|flat/.test(t))return 'fixed_length';
   if(/csv|delimited/.test(t))return 'csv';if(/json/.test(t))return 'json';return null;}
@@ -192,6 +202,33 @@ function detSign(t){if(/managed_agent|managed signing|managed agent/.test(t))ret
 function detAuth(t){if(t.includes('oauth'))return 'oauth';if(/mtls|mutual tls/.test(t))return 'mtls';
   if(/api ?key/.test(t))return 'apikey';if(t.includes('hmac'))return 'hmac';return null;}
 const isSignOff=t=>/sign.?off|signed off|approve|approved|looks good|go ahead|generate|confirm|proceed/.test(t);
+
+/* ── selectable choices + write-in ──────────────────────────────────────────── */
+const WRITEIN=new Set(['erp','connectivity','fileFormat']);
+function choicesFor(){
+  if(!pendingSlot) return null;
+  const all=history.join('\n');
+  const tenant=detTenant(all),dirs=tenant?detDirections(all,tenant):[],roles=tenant?rolesFromTenant(tenant,dirs):[],erp=detErp(all);
+  switch(pendingSlot){
+    case 'tenant':return {opts:[{l:'Buyer tenant',v:'buyer tenant'},{l:'Standalone supplier',v:'standalone supplier'}]};
+    case 'directions':return {opts:[{l:'AP documents',v:'AP documents'},{l:'AR documents',v:'AR documents'},{l:'AP + AR',v:'AP and AR documents'}]};
+    case 'products':return {multi:true,opts:productsForRoles(roles).map(p=>({l:p.id,v:p.id}))};
+    case 'erp':return {writein:true,opts:R.erps.map(e=>({l:e.label,v:e.id}))};
+    case 'bu':return {opts:[{l:'1 BU (BU1000)',v:'1 business unit: BU1000'},{l:'2 BUs (BU1000, BU2000)',v:'2 business units: BU1000, BU2000'},{l:'3 BUs',v:'3 business units: BU1000, BU2000, BU3000'}]};
+    case 'clientIds':return {opts:[{l:'default (1)',v:'clientIds: default (1)'},{l:'2 systems',v:'2 source systems'},{l:'3 systems',v:'3 source systems'}]};
+    case 'connectivity':return {writein:true,opts:connForErp(erp).map(c=>({l:c.id,v:c.id}))};
+    case 'fileFormat':return {writein:true,opts:R.fileFormats.map(f=>({l:f.id,v:f.id}))};
+    case 'signing':return {opts:[{l:'Managed signing agent',v:'managed_agent'},{l:'Customer self-signing',v:'self_signing'}]};
+    case 'auth':return {opts:R.authMethods.map(a=>({l:a.id,v:a.id}))};
+    case 'summary':return {opts:[{l:'Show summary',v:'show me the summary'},{l:'✅ Sign off',v:'sign off',primary:true}]};
+  }
+  return null;}
+function captureWriteIn(slot,raw){const v=raw.trim();
+  if(!v||v.length>48||/\?\s*$/.test(v))return;   // only short, answer-like text becomes a write-in (not questions or sentences)
+  const all=history.join('\n');
+  if(slot==='erp'){if(!detErp(all,true))customSlots.erp=v;}
+  else if(slot==='connectivity'){const erp=detErp(all);if(!detConn(all,erp,true))customSlots.conn=v;}
+  else if(slot==='fileFormat'){if(!detFmt(all,true))customSlots.fmt=v;}}
 
 function advisorReply(){
   const all=history.join('\n');
@@ -208,20 +245,21 @@ function advisorReply(){
   const needAuth=conn==='direct_api';   // only a direct-API connection needs an auth choice; managed + file transports are always HMAC-SHA256
   const auth=needAuth?detAuth(all):'hmac';
   const last=history[history.length-1]||'';
-  if(!tenant) return {text:askTenant()};
-  if(tenant==='buyer'&&!dirs.length) return {text:askDirections()};
-  if(!products.length) return {text:askProducts(roles,tenant,dirs)};
-  if(!erp) return {text:askErp(products)};
-  if(scale.bu==null) return {text:askBU()};
+  if(!tenant){pendingSlot='tenant';return {text:askTenant()};}
+  if(tenant==='buyer'&&!dirs.length){pendingSlot='directions';return {text:askDirections()};}
+  if(!products.length){pendingSlot='products';return {text:askProducts(roles,tenant,dirs)};}
+  if(!erp){pendingSlot='erp';return {text:askErp(products)};}
+  if(scale.bu==null){pendingSlot='bu';return {text:askBU()};}
   if(scale.ids==null && !/default|just 1|one client|single client|1 client|1 system/.test(all)) {
     // clientIds defaults to 1 — accept an explicit answer or a 'default' acknowledgement
-    return {text:askClientIds()};
+    pendingSlot='clientIds';return {text:askClientIds()};
   }
-  if(!conn) return {text:askConn(erp)};
-  if(!fmt) return {text:askFmt(conn)};
-  if(needSign && !sign) return {text:askSign()};
-  if(needAuth && !auth) return {text:askAuth()};
-  if(!isSignOff(last)) return {text:summary(tenant,dirs,roles,products,erp,scale,conn,fmt,needSign?sign:null,auth,needAuth)};
+  if(!conn){pendingSlot='connectivity';return {text:askConn(erp)};}
+  if(!fmt){pendingSlot='fileFormat';return {text:askFmt(conn)};}
+  if(needSign && !sign){pendingSlot='signing';return {text:askSign()};}
+  if(needAuth && !auth){pendingSlot='auth';return {text:askAuth()};}
+  if(!isSignOff(last)){pendingSlot='summary';return {text:summary(tenant,dirs,roles,products,erp,scale,conn,fmt,needSign?sign:null,auth,needAuth)};}
+  pendingSlot=null;
   const prof=buildProfile(tenant,dirs,roles,products,erp,scale,conn,fmt,needSign?sign:null,auth);
   gateProfile=prof;
   return {text:gateText(prof),gate:true,profile:prof};
@@ -445,10 +483,25 @@ function renderSlots(){const all=history.join('\n');
     ['clientIds',scale.ids!=null?String(scale.ids):''],['connectivity',conn||''],['fileFormat',fmt||''],
     ['signing',signingRequired(products)?(sign||'(required)'):'n/a'],['auth',needAuth?(auth||'(required)'):'hmac (fixed)']];
   slotsEl.innerHTML=rows.map(([k,v])=>'<div class="slot'+(v&&v!=='(required)'&&v!=='n/a'?' filled':'')+'"><span class="k">'+k+'</span><span class="v">'+(v||'—')+'</span></div>').join('');}
-function renderScript(){scriptbar.innerHTML='';if(gateProfile)return;
-  SCRIPT.slice(scriptIdx,scriptIdx+3).forEach((sv,i)=>{const b=document.createElement('button');
-    b.textContent=(i===0?'▶ ':'')+(sv.length>38?sv.slice(0,38)+'…':sv);if(i===0)b.className='next';
-    b.onclick=()=>{input.value=SCRIPT[scriptIdx];sendMsg();};scriptbar.appendChild(b);});}
+function renderChoices(){scriptbar.innerHTML='';if(gateProfile)return;
+  const c=choicesFor();if(!c)return;
+  const lbl=document.createElement('span');lbl.className='chlbl';
+  lbl.textContent=c.multi?'Pick one or more, then Send — or type:':'Choose, or type your own:';
+  scriptbar.appendChild(lbl);
+  c.opts.forEach(o=>{const b=document.createElement('button');b.className='choice'+(o.primary?' primary':'');
+    b.textContent=o.l;
+    b.onclick=()=>{ if(c.multi){ input.value=(input.value?input.value.trim()+' ':'')+o.v; input.focus(); }
+                   else { input.value=o.v; sendMsg(); } };
+    scriptbar.appendChild(b);});
+  if(c.writein){const w=document.createElement('button');w.className='choice writein';w.textContent='✎ write-in';
+    const kind=pendingSlot==='erp'?'ERP':pendingSlot==='connectivity'?'connectivity':pendingSlot==='fileFormat'?'file format':'concept';
+    w.onclick=()=>{input.focus();input.placeholder='Type a proprietary '+kind+' name, then Send…';};
+    scriptbar.appendChild(w);}}
+let autoplaying=false;
+function autoPlay(){reset();autoplaying=true;let i=0;
+  const step=()=>{ if(!autoplaying||i>=SCRIPT.length||gateProfile){autoplaying=false;return;}
+    input.value=SCRIPT[i++];sendMsg();setTimeout(step,650);};
+  setTimeout(step,350);}
 function openGate(p){
   // attach parsed BU numbers
   const all=history.join('\n');p.scale.businessUnitNumbers=parseBUNums(all.toUpperCase());
@@ -480,17 +533,20 @@ function showArtifacts(){
   document.getElementById('pvtitle').textContent='Preview — '+window._arts[1].nm;document.getElementById('preview').textContent=window._arts[1].body;
   document.getElementById('dlall').onclick=()=>window._arts.forEach((a,i)=>setTimeout(()=>dl(a.fn,a.body,a.type),i*220));}
 function sendMsg(){const v=input.value.trim();if(!v)return;
-  bubble(v,'user');history.push(v.toLowerCase());input.value='';
+  const askedSlot=pendingSlot;
+  bubble(v,'user');history.push(v.toLowerCase());input.value='';input.placeholder='Type a reply, or use the choices above…';
+  if(askedSlot&&WRITEIN.has(askedSlot))captureWriteIn(askedSlot,v);
   if(SCRIPT[scriptIdx]&&v.toLowerCase()===SCRIPT[scriptIdx].toLowerCase())scriptIdx++;
   renderSlots();
-  setTimeout(()=>{const r=advisorReply();bubble(r.text,r.gate?'bot gate':'bot');if(r.gate&&r.profile)openGate(r.profile);renderScript();},190);}
-function reset(){history=[];gateProfile=null;bundle=null;scriptIdx=0;chat.innerHTML='';
+  setTimeout(()=>{const r=advisorReply();bubble(r.text,r.gate?'bot gate':'bot');if(r.gate&&r.profile)openGate(r.profile);renderChoices();},190);}
+function reset(){history=[];gateProfile=null;bundle=null;scriptIdx=0;customSlots={};pendingSlot='tenant';autoplaying=false;chat.innerHTML='';
   document.getElementById('artpanel').style.display='none';document.getElementById('gatedot').className='dot';
   document.getElementById('gatelabel').textContent='Closed — awaiting sign-off';
   document.getElementById('gatemsg').innerHTML='No artifact is generated until the consultant explicitly signs off. The gate opens only when a valid <code>ready_for_generation</code> profile block is emitted.';
-  renderSlots();bubble(askTenant(),'bot');renderScript();input.focus();}
+  renderSlots();bubble(askTenant(),'bot');renderChoices();input.focus();}
 document.getElementById('send').onclick=sendMsg;
 document.getElementById('reset').onclick=reset;
+document.getElementById('demo').onclick=autoPlay;
 input.addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg();});
 const root=document.documentElement;
 document.getElementById('themebtn').onclick=()=>{root.setAttribute('data-theme',root.getAttribute('data-theme')==='light'?'dark':'light');};
