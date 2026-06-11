@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connect Advisor — SAP Taulia Professional Services</title>
+<style>
+  :root[data-theme="light"]{--bg:#f4f6f9;--panel:#fff;--panel2:#f0f3f7;--line:#d9e0ea;--txt:#1a2230;
+    --muted:#5b6675;--accent:#0a6ed1;--accent2:#107e3e;--amber:#c35a00;--userbg:#e3f0fb;--code:#eef2f7;--pre:#f7f9fc;--prefg:#243044;}
+  :root[data-theme="dark"]{--bg:#0d1117;--panel:#161b22;--panel2:#1c2330;--line:#2b3445;--txt:#e6edf3;
+    --muted:#9aa7b6;--accent:#4493f8;--accent2:#3fb950;--amber:#f59e0b;--userbg:#1f3a5f;--code:#0d1117;--pre:#0a0e14;--prefg:#bcd;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);line-height:1.55;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","72",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .wrap{max-width:1140px;margin:0 auto;padding:24px 20px 80px}
+  header.top{display:flex;align-items:center;gap:14px;margin-bottom:4px}
+  .logo{width:42px;height:42px;border-radius:9px;background:linear-gradient(135deg,#0a6ed1,#107e3e);
+    display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:17px;flex-shrink:0}
+  h1{font-size:22px;margin:0;font-weight:600}
+  .sub{color:var(--muted);font-size:13.5px;margin:2px 0 0}
+  .themebtn{margin-left:auto;background:var(--panel);border:1px solid var(--line);color:var(--txt);
+    border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;
+    background:var(--panel2);color:var(--accent);border:1px solid var(--line);padding:3px 9px;border-radius:999px}
+  .grid{display:grid;grid-template-columns:1.18fr .82fr;gap:18px;margin-top:20px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  .panel h2{font-size:13.5px;margin:0;padding:12px 16px;border-bottom:1px solid var(--line);font-weight:600;display:flex;align-items:center;gap:8px}
+  .chat{height:430px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:11px}
+  .msg{max-width:90%;padding:10px 13px;border-radius:11px;font-size:13.5px;white-space:pre-wrap;word-wrap:break-word}
+  .msg.bot{background:var(--panel2);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px}
+  .msg.user{background:var(--userbg);align-self:flex-end;border-bottom-right-radius:4px}
+  .msg code{font-family:ui-monospace,Menlo,monospace;background:var(--code);padding:1px 5px;border-radius:5px;font-size:12px}
+  .msg.gate{border-color:var(--amber)}
+  .composer{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+  .composer input{flex:1;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:10px 12px;font-size:13.5px;font-family:inherit}
+  button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 14px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+  .scriptbar{display:flex;flex-wrap:wrap;gap:7px;padding:11px 12px;border-top:1px solid var(--line);background:var(--panel2)}
+  .scriptbar button{background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:12px;padding:6px 10px;font-weight:500}
+  .scriptbar button.next{border-color:var(--accent);color:var(--accent)}
+  .side{display:flex;flex-direction:column;gap:16px}
+  .slots{padding:13px 16px;display:flex;flex-direction:column;gap:8px}
+  .slot{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;padding:7px 11px;background:var(--bg);border:1px solid var(--line);border-radius:8px}
+  .slot .k{color:var(--muted)} .slot .v{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;text-align:right;max-width:62%}
+  .slot.filled{border-color:var(--accent2)}
+  .gatebox{padding:13px 16px;font-size:12.5px;color:var(--muted)}
+  .gatebox .state{display:flex;align-items:center;gap:9px;margin-bottom:8px;font-size:13.5px;color:var(--txt);font-weight:600}
+  .dot{width:10px;height:10px;border-radius:50%;background:#9aa7b6}
+  .dot.open{background:var(--accent2);box-shadow:0 0 0 4px rgba(16,126,62,.2)}
+  .arts{padding:13px 16px;display:flex;flex-direction:column;gap:9px}
+  .art{display:flex;align-items:center;gap:11px;padding:10px 12px;background:var(--bg);border:1px solid var(--line);border-radius:8px}
+  .art .ic{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;color:#fff}
+  .art .nm{flex:1;font-size:12.5px;min-width:0}
+  .art .nm small{display:block;color:var(--muted);font-size:11px;font-weight:400;overflow:hidden;text-overflow:ellipsis}
+  .art button{padding:6px 10px;font-size:12px}
+  .art button.view{background:transparent;border:1px solid var(--line);color:var(--txt);margin-right:6px}
+  .foot{margin-top:24px;font-size:12px;color:var(--muted);text-align:center;line-height:1.7}
+  .kbd{font-family:ui-monospace,Menlo,monospace;background:var(--code);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:11.5px}
+  pre.preview{margin:0;max-height:300px;overflow:auto;background:var(--pre);border:1px solid var(--line);border-radius:8px;padding:12px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--prefg);white-space:pre}
+  .ribbon{font-size:11.5px;color:var(--muted);padding:9px 16px;border-top:1px solid var(--line);background:var(--panel2)}
+  .pvtitle{font-size:12px;color:var(--muted);padding:10px 16px 0}
+  .dlall{margin:10px 16px 14px;width:calc(100% - 32px)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo">CA</div>
+    <div><h1>Connect Advisor</h1>
+      <p class="sub">Agentic new-customer setup for SAP Taulia Professional Services · EBI v4.8.0 · human-in-the-loop sign-off</p></div>
+    <button class="themebtn" id="themebtn">◐ Theme</button>
+  </header>
+  <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+    <span class="pill">Hackathon prototype</span>
+    <span class="pill" style="color:var(--accent2)">Runs in-browser · no backend</span>
+    <span class="pill" style="color:var(--amber)">HITL gate enforced</span>
+  </div>
+  <div class="grid">
+    <div class="panel">
+      <h2>Scoping interview</h2>
+      <div class="chat" id="chat"></div>
+      <div class="scriptbar" id="scriptbar"></div>
+      <div class="composer">
+        <input id="input" placeholder="Type a reply, or use the suggested turns above…" autocomplete="off"/>
+        <button id="send">Send</button>
+        <button class="ghost" id="reset">Reset</button>
+      </div>
+      <div class="ribbon">Demo path: <b>Acme Industries</b> · buyer tenant (AP+AR) · <code>s4priv</code> · <code>sftp_push</code> · <code>csv</code> · early payments → <code>taulia_sbi</code></div>
+    </div>
+    <div class="side">
+      <div class="panel"><h2>Captured slots</h2><div class="slots" id="slots"></div></div>
+      <div class="panel"><h2>HITL gate</h2><div class="gatebox">
+        <div class="state"><span class="dot" id="gatedot"></span><span id="gatelabel">Closed — awaiting sign-off</span></div>
+        <div id="gatemsg">No artifact is generated until the consultant explicitly signs off. The gate opens only when a valid <code>ready_for_generation</code> profile block is emitted.</div>
+      </div></div>
+      <div class="panel" id="artpanel" style="display:none">
+        <h2>New-customer setup bundle</h2>
+        <div class="arts" id="arts"></div>
+        <button class="dlall" id="dlall">Download all</button>
+        <div class="pvtitle" id="pvtitle">Preview</div>
+        <div style="padding:0 16px 14px"><pre class="preview" id="preview">—</pre></div>
+      </div>
+    </div>
+  </div>
+  <p class="foot">
+    Runs the full branched interview → HITL gate → bundle generation in your browser, using the same domain ground truth (EBI v4.8.0 flow map, tenant model, connectivity, signing rules) as the Spring AI service on SAP AI Core.<br>
+    Real service: <span class="kbd">/connect-advisor</span> · CAP consumes the REST seam and triggers the SAP Integration Suite CI package builder (see <span class="kbd">ARCHITECTURE-CAP.md</span>).
+  </p>
+</div>
+<script>
+const DOMAIN = {"productMatrix":{"ap_buyer":[{"id":"invoices_ap","label":"Invoices (AP)"},{"id":"purchase_orders","label":"Purchase orders"},{"id":"early_payments","label":"Early payments / supply chain finance"},{"id":"payments","label":"Payment records and remittance"},{"id":"supplier_master","label":"Supplier master data"},{"id":"supplier_launch","label":"Supplier launch / vendor onboarding"},{"id":"virtual_card","label":"Virtual card issuance"},{"id":"business_units","label":"Organization structure (business units)"},{"id":"dpt_campaigns","label":"Dynamic payment term campaigns"},{"id":"advance_shipping","label":"Advance shipping notices"}],"ar_seller":[{"id":"receivables","label":"Receivable invoices (AR)"},{"id":"ar_payments","label":"AR payments"},{"id":"sales_orders","label":"Sales orders"},{"id":"customer_masters","label":"Customer masters"}],"supplier":[{"id":"sup_po","label":"Purchase orders (receive and confirm)"},{"id":"sup_invoice","label":"Invoice creation and management"},{"id":"sup_ep","label":"Early payment requests"},{"id":"sup_payment","label":"Payment records (view)"},{"id":"sup_enrollment","label":"Enrollment with buyers"},{"id":"sup_user","label":"User management"}],"funder":[{"id":"fund_ep","label":"Early payment processing (funder)"},{"id":"fund_vc","label":"Virtual card programs (funder)"},{"id":"fund_remittance","label":"Remittance advice (funder)"}]},"flowMap":{"invoices_ap":[{"dir":"push","ep":"POST /v1/invoices"},{"dir":"push","ep":"POST /v1/invoiceImages"},{"dir":"push","ep":"POST /v1/invoices/confirmations"},{"dir":"push","ep":"POST /v1/invoices/finance"},{"dir":"push","ep":"POST /v2/invoices/customFieldConfig"},{"dir":"poll","ep":"GET /v1/invoices/supplierSubmissionNotifications"},{"dir":"ack","ep":"DELETE /v1/invoices/supplierSubmissionNotifications/{id}"},{"dir":"poll","ep":"GET /v1/invoices/supplierCancellationNotifications"},{"dir":"ack","ep":"DELETE /v1/invoices/supplierCancellationNotifications/{id}"},{"dir":"poll","ep":"GET /v1/invoices/{id}"}],"purchase_orders":[{"dir":"push","ep":"POST /v1/purchaseOrders"},{"dir":"push","ep":"PUT /v1/purchaseOrders"},{"dir":"push","ep":"POST /v1/purchaseOrderImages"},{"dir":"poll","ep":"GET /v1/purchaseOrders/confirmationNotifications"},{"dir":"ack","ep":"DELETE /v1/purchaseOrders/confirmationNotifications/{id}"},{"dir":"poll","ep":"GET /v2/purchaseOrder/confirmation"},{"dir":"poll","ep":"GET /v2/purchaseOrder/confirmation/{id}"},{"dir":"ack","ep":"POST /v2/purchaseOrder/confirmation"}],"advance_shipping":[{"dir":"poll","ep":"GET /v1/advanceShippingNotices/notifications"},{"dir":"ack","ep":"POST /v1/advanceShippingNotices/confirmations"}],"early_payments":[{"dir":"poll","ep":"GET /v2/earlyPayments/requests"},{"dir":"ack","ep":"POST /v2/earlyPayments/acknowledgement"},{"dir":"poll","ep":"GET /v1/earlyPayments"},{"dir":"poll","ep":"GET /v1/earlyPayments/{transactionId}"},{"dir":"poll","ep":"GET /v1/earlyPayments/notifications"},{"dir":"ack","ep":"POST /v1/earlyPayments/notifications"},{"dir":"ack","ep":"DELETE /v1/earlyPayments/notifications/{id}"},{"dir":"push","ep":"POST /v1/earlyPayments"},{"dir":"push","ep":"POST /v1/earlyPaymentCancels"},{"dir":"push","ep":"POST /v1/earlyPaymentList"}],"payments":[{"dir":"push","ep":"POST /v1/paymentRecords"},{"dir":"poll","ep":"GET /v2/remittanceAdvice"},{"dir":"ack","ep":"POST /v2/remittanceAdvice/acknowledgement"}],"supplier_master":[{"dir":"push","ep":"POST /v1/supplierMaster"},{"dir":"poll","ep":"GET /v1/supplierMaster"},{"dir":"poll","ep":"GET /v1/supplierMaster/{id}"},{"dir":"poll","ep":"GET /v1/supplierMaster/notifications"},{"dir":"ack","ep":"DELETE /v1/supplierMaster/notifications/{id}"},{"dir":"poll","ep":"GET /v2/supplierMaster/change"},{"dir":"poll","ep":"GET /v2/supplierMaster/change/{id}"}],"supplier_launch":[{"dir":"poll","ep":"GET /v1/supplierLaunch/notifications"},{"dir":"push","ep":"POST /v1/supplierLaunch/confirmations"},{"dir":"poll","ep":"GET /v2/supplierLaunch"},{"dir":"poll","ep":"GET /v2/supplierLaunch/{id}"},{"dir":"ack","ep":"POST /v2/supplierLaunch/{id}"}],"virtual_card":[{"dir":"poll","ep":"GET /v2/virtualCard/issuances"},{"dir":"ack","ep":"POST /v2/virtualCard/issuances/acknowledgment"},{"dir":"poll","ep":"GET /v2/virtualCard/issuances/cancels"},{"dir":"ack","ep":"POST /v2/virtualCard/issuances/cancels/acknowledgment"},{"dir":"poll","ep":"GET /v2/virtualCard/{cardId}/status"}],"business_units":[{"dir":"push","ep":"POST /v1/businessUnits"}],"dpt_campaigns":[{"dir":"push","ep":"POST /v1/paymentTermsOffers"}],"receivables":[{"dir":"push","ep":"POST /v1/receivable/invoices"},{"dir":"push","ep":"POST /v1/receivable/payments"}],"ar_payments":[{"dir":"push","ep":"POST /v1/receivable/payments"}],"sales_orders":[{"dir":"push","ep":"POST /v1/receivable/salesOrders"}],"customer_masters":[{"dir":"push","ep":"POST /v1/customerMasters"}],"sup_po":[{"dir":"poll","ep":"GET /v1/purchaseOrders/confirmationNotifications"},{"dir":"ack","ep":"DELETE /v1/purchaseOrders/confirmationNotifications/{id}"},{"dir":"poll","ep":"GET /v2/purchaseOrder/confirmation"},{"dir":"poll","ep":"GET /v2/purchaseOrder/confirmation/{id}"},{"dir":"ack","ep":"POST /v2/purchaseOrder/confirmation"}],"sup_invoice":[{"dir":"push","ep":"POST /v1/invoices"},{"dir":"poll","ep":"GET /v1/invoices/{id}"},{"dir":"poll","ep":"GET /v1/invoices/supplierSubmissionNotifications"},{"dir":"ack","ep":"DELETE /v1/invoices/supplierSubmissionNotifications/{id}"},{"dir":"push","ep":"POST /v1/invoices/confirmations"}],"sup_ep":[{"dir":"poll","ep":"GET /v2/earlyPayments/requests"},{"dir":"ack","ep":"POST /v2/earlyPayments/acknowledgement"},{"dir":"poll","ep":"GET /v1/earlyPayments/{transactionId}"},{"dir":"push","ep":"POST /v1/earlyPayments"}],"sup_payment":[{"dir":"poll","ep":"GET /v2/remittanceAdvice"},{"dir":"ack","ep":"POST /v2/remittanceAdvice/acknowledgement"}],"sup_enrollment":[{"dir":"poll","ep":"GET /v1/enrollmentInvitations"},{"dir":"poll","ep":"GET /v1/enrollmentInvitations/{id}"},{"dir":"poll","ep":"GET /v1/enrollmentLogins"},{"dir":"poll","ep":"GET /v1/enrollmentLogins/{id}"},{"dir":"ack","ep":"DELETE /v1/enrollmentLogins/{id}"},{"dir":"push","ep":"POST /v1/enrollments"}],"sup_user":[{"dir":"poll","ep":"GET /v1/attachment/notifications"},{"dir":"poll","ep":"GET /v1/attachment/{id}"},{"dir":"ack","ep":"DELETE /v1/attachment/{id}"}],"fund_ep":[{"dir":"poll","ep":"GET /v2/earlyPayments/requests"},{"dir":"ack","ep":"POST /v2/earlyPayments/acknowledgement"}],"fund_vc":[{"dir":"poll","ep":"GET /v2/virtualCard/issuances"},{"dir":"ack","ep":"POST /v2/virtualCard/issuances/acknowledgment"}],"fund_remittance":[{"dir":"poll","ep":"GET /v2/remittanceAdvice"},{"dir":"ack","ep":"POST /v2/remittanceAdvice/acknowledgement"}]},"reference":{"roles":[{"id":"ap_buyer","label":"AP buyer (accounts payable)"},{"id":"ar_seller","label":"AR seller (accounts receivable)"},{"id":"supplier","label":"Supplier"},{"id":"funder","label":"Funder"}],"erps":[{"id":"s4pub","label":"S/4HANA public cloud","path":"ci-managed"},{"id":"s4priv","label":"S/4HANA private cloud","path":"ci-managed"},{"id":"ecc","label":"SAP ECC","path":"ci-managed"},{"id":"oracle","label":"Oracle","path":"direct-api"},{"id":"other_erp","label":"Other ERP","path":"direct-api"},{"id":"custom","label":"Custom / in-house","path":"direct-api"}],"ciManagedErps":["s4pub","s4priv","ecc"],"tenantTypes":[{"id":"buyer","label":"Buyer tenant","desc":"AP, and optionally AR documents (the customer acting as a supplier for AR stays in the buyer tenant)"},{"id":"supplier","label":"Standalone supplier","desc":"Supplier-side integration with its own tuning, separate from any buyer tenant"}],"documentDirections":[{"id":"ap","label":"AP documents (payables: invoices, payments, early payments)","tenant":"buyer"},{"id":"ar","label":"AR documents (receivables — acting as supplier within the buyer tenant)","tenant":"buyer"}],"connectivityTypes":[{"id":"as2","label":"AS2","path":"file","method":"AS2 (signed/encrypted EDI transport)","secure":true},{"id":"sftp_push","label":"sFTP PUSH","path":"file","method":"sFTP — customer pushes files to Taulia","secure":true},{"id":"sftp_pull","label":"sFTP PULL","path":"file","method":"sFTP — customer polls/pulls files from Taulia","secure":true},{"id":"http_post","label":"HTTP POST","path":"file","method":"HTTPS POST to the Taulia endpoint","secure":true},{"id":"soap","label":"SOAP","path":"file","method":"SOAP web service","secure":true},{"id":"ci_idoc","label":"SAP Cloud Integration — IDoc","path":"ci-managed","adapter":"IDoc","secure":true},{"id":"ci_odata","label":"SAP Cloud Integration — OData","path":"ci-managed","adapter":"OData","secure":true},{"id":"ci_rfc","label":"SAP Cloud Integration — RFC","path":"ci-managed","adapter":"RFC","secure":true},{"id":"ci_soap","label":"SAP Cloud Integration — SOAP","path":"ci-managed","adapter":"SOAP","secure":true},{"id":"ci_rest","label":"SAP Cloud Integration — REST/HTTPS","path":"ci-managed","adapter":"HTTPS","secure":true},{"id":"direct_api","label":"Direct API (customer middleware → EBI)","path":"direct-api","adapter":"HTTPS","secure":true}],"ciConnectivityIds":["ci_idoc","ci_odata","ci_rfc","ci_soap","ci_rest"],"fileConnectivityIds":["as2","sftp_push","sftp_pull","http_post","soap"],"insecureConnectivityNote":"Email is not a supported connectivity method — it is too insecure for financial data.","fileFormats":[{"id":"json","label":"JSON (native EBI)"},{"id":"csv","label":"CSV / delimited"},{"id":"fixed_length","label":"Fixed-length / flat text"},{"id":"xml","label":"XML"},{"id":"cxml","label":"cXML"},{"id":"peppol_bis3","label":"Peppol BIS 3.0"},{"id":"idoc_xml","label":"IDoc-XML"},{"id":"edifact","label":"EDIFACT / EDI"}],"signingModes":[{"id":"taulia_sbi","label":"Taulia Secure Buyer Integration (SBI)","desc":"Taulia's on-premise SBI agent signs sensitive data with a digital certificate (x509 SHA-256, RSA 2048)."},{"id":"self_signing","label":"Customer self-signing","desc":"The customer signs sensitive data themselves before transmission (opt-in for those who manage their own signing)."}],"signedInterfaces":[{"id":"supplier_master_signed","label":"Supplier master","signatureInput":"supplierNumber | addressCountry | bankAccountNumber | bankNumber | bankControlKey | timestamp | bankSwiftNumber | bankIbanNumber"},{"id":"invoice_signed","label":"Invoice","signatureInput":"currency | dueDate | grossAmount | invoiceDiscountBaseAmount | invoiceIndicator | erpId | supplierNumber | status | timestamp"},{"id":"epr_ack_signed","label":"Early payment acknowledgement","signatureInput":"invoiceCurrency | payDate | invoiceAmount | invoiceDiscountBaseAmount | invoiceIndicator | erpId | supplierNumber | timestamp"}],"signingTriggerProducts":["early_payments","sup_ep","fund_ep"],"integrationSources":["TAULIA_ADDON_TD_CI","TAULIA_ADDON_TD","TAULIA_ADDON_POD","CIG_ADDON","SAP_S4HANA_PUBLIC_CLOUD","SAP_S4HANA_PRIVATE_CLOUD","EBI_DIRECT_CONNECT","ANYERP","ARIBA_BUYING"],"erpIntegrationSource":{"s4pub":"SAP_S4HANA_PUBLIC_CLOUD","s4priv":"SAP_S4HANA_PRIVATE_CLOUD","ecc":"TAULIA_ADDON_TD","oracle":"ANYERP","other_erp":"ANYERP","custom":"EBI_DIRECT_CONNECT"},"authMethods":[{"id":"hmac","label":"HMAC-SHA256 (x-tau-rest-signature + x-tau-rest-apikey)"},{"id":"oauth","label":"OAuth 2.0 client credentials (APIM-fronted)"},{"id":"mtls","label":"mTLS (X.509 client certificate)"},{"id":"apikey","label":"API key (APIM-issued, simplest path)"}],"ebiAuthHeaders":[{"name":"x-tau-rest-apikey","desc":"Taulia API key (<=36 chars)","required":true},{"name":"x-tau-rest-signature","desc":"HMAC-SHA256 request signature","required":true},{"name":"date","desc":"Request timestamp, ISO 8601 (e.g. 2025-01-15T10:30:00.000Z)","required":true},{"name":"x-tau-erp-client-id","desc":"ERP client id, required for MERP buyers (e.g. SAP_123)","required":true},{"name":"x-tau-integration-source","desc":"Integration source identifier (drives ERP path)","required":false},{"name":"x-tau-integration-source-version","desc":"Version of the integration source","required":false},{"name":"x-tau-rest-external-reference-id","desc":"Trace id to correlate requests","required":false}],"notes":{"platform":"Buyers and suppliers integrate over the External Buyer Integration (EBI) API, v4.8.0, HMAC-SHA256. The legacy Buyer API is fully retired.","terminology":"A customer is a single party that holds one or more role attributes (ap_buyer, ar_seller, supplier, funder). Say 'the customer acting as ap_buyer', not 'the buyer'. AP vs AR activity determines push/poll direction.","ebiAuth":"Every EBI request carries x-tau-rest-apikey + x-tau-rest-signature (HMAC-SHA256 over the canonical request) + date + x-tau-erp-client-id. APIM may accept the customer's preferred method (oauth/apikey/mtls) externally and translate to the HMAC-SHA256 header pair for the Taulia backend; the signature pair is always what reaches EBI.","hmacLegacy":"Modern EBI uses HMAC-SHA256. Some legacy unmigrated suppliers on the older 0.2/0.3 Supplier endpoints may still use HMAC-SHA1 — flag this in the checklist when supplier products are in scope.","mtlsUsage":"mTLS (X.509 client cert) is used by some regulated funders.","ticketModel":"Push (POST/PUT) calls return a TicketBatchResponse (batchId + per-document tickets) processed asynchronously; poll GET endpoints return pending items, and ack (DELETE/POST acknowledgement) removes them from the Taulia queue.","tenantModel":"A buyer who also handles AR (acting as a supplier for receivables) stays in the BUYER tenant for those AR transactions — same EBI tenant, AR documents. A standalone supplier is a separate tenant with its own tuning (e.g. send invoice and PO, accept PO acknowledgement).","connectivity":"Supported transports: AS2, sFTP (PUSH or PULL), HTTP POST, SOAP, and SAP Cloud Integration adapters. Email is NOT supported — too insecure for financial data.","signing":"When early payments are in scope, the signed interfaces (supplier master, invoice, early payment acknowledgement) must be signed. Choose Taulia SBI (Taulia's on-premise agent signs) or customer self-signing. SBI uses an x509 SHA-256 / RSA 2048 certificate; one cert per environment (UAT + Production).","scaling":"Capture how many business units (with their unique numbers) and how many clientIds (each represents a source system; defaults to 1) are in scope."}}};
+</script>
+<script>
+const M=DOMAIN.productMatrix, F=DOMAIN.flowMap, R=DOMAIN.reference;
+const ciErp=new Set(R.ciManagedErps), ciConn=new Set(R.ciConnectivityIds), fileConn=new Set(R.fileConnectivityIds);
+const sigTrigger=new Set(R.signingTriggerProducts);
+const productLabel=id=>{for(const a of Object.values(M))for(const p of a)if(p.id===id)return p.label;return id;};
+const erpLabel=id=>(R.erps.find(e=>e.id===id)||{}).label||id;
+const authLabel=id=>(R.authMethods.find(a=>a.id===id)||{}).label||id;
+const connLabel=id=>(R.connectivityTypes.find(c=>c.id===id)||{}).label||id;
+const connMethod=id=>{const c=R.connectivityTypes.find(c=>c.id===id)||{};return c.method||c.label||id;};
+const connAdapter=id=>(R.connectivityTypes.find(c=>c.id===id)||{}).adapter||'HTTPS';
+const fmtLabel=id=>(R.fileFormats.find(f=>f.id===id)||{}).label||id;
+const tenantLabel=id=>(R.tenantTypes.find(t=>t.id===id)||{}).label||id;
+const signLabel=id=>id?((R.signingModes.find(s=>s.id===id)||{}).label||id):'none (no signed data)';
+const pathFor=erp=>ciErp.has(erp)?'ci-managed':'direct-api';
+const intSource=erp=>(R.erpIntegrationSource||{})[erp]||'ANYERP';
+const erpClientHint=erp=>(['s4pub','s4priv','ecc'].includes(erp))?'SAP_001':(erp==='oracle'?'ORA_001':'ERP_001');
+const productsForRoles=roles=>{const o={};roles.forEach(r=>(M[r]||[]).forEach(p=>o[p.id]??=p));return Object.values(o);};
+const connForErp=erp=>R.connectivityTypes.filter(c=>c.path===pathFor(erp)||c.path==='file');
+const signingRequired=products=>products.some(p=>sigTrigger.has(p));
+
+let history=[]; let gateProfile=null; let bundle=null;
+
+/* ── slot detection (branched) ──────────────────────────────────────────────── */
+function detTenant(t){
+  if(/standalone supplier|supplier tenant|just a supplier|only a supplier/.test(t))return 'supplier';
+  if(/buyer tenant|\bbuyer\b|accounts payable|\bap\b/.test(t))return 'buyer';
+  if(/\bsupplier\b/.test(t))return 'supplier';
+  return null;}
+function detDirections(t,tenant){if(tenant!=='buyer')return [];const d=[];
+  if(/\bap\b|accounts payable|payable/.test(t))d.push('ap');
+  if(/\bar\b|accounts receivable|receivable|also a supplier|acting as.*supplier/.test(t))d.push('ar');
+  if(!d.length&&/buyer/.test(t))d.push('ap');
+  return [...new Set(d)];}
+function rolesFromTenant(tenant,dirs){const r=[];
+  if(tenant==='buyer'){ if(dirs.includes('ap'))r.push('ap_buyer'); if(dirs.includes('ar'))r.push('ar_seller'); }
+  else if(tenant==='supplier') r.push('supplier');
+  return r;}
+function detProducts(t,roles){const valid=productsForRoles(roles);const c=[];
+  valid.forEach(p=>{if(t.includes(p.id))c.push(p.id);});
+  if(!c.length){
+    if(roles.includes('ap_buyer')&&t.includes('invoice'))add(c,valid,'invoices_ap');
+    if(roles.includes('ap_buyer')&&/purchase order|\bpo\b/.test(t))add(c,valid,'purchase_orders');
+    if(roles.includes('ap_buyer')&&/early payment|early-payment|\bep\b|scf/.test(t))add(c,valid,'early_payments');
+    if(roles.includes('ar_seller')&&/receivable|ar invoice/.test(t))add(c,valid,'receivables');
+    if(roles.includes('supplier')&&t.includes('invoice'))add(c,valid,'sup_invoice');
+    if(roles.includes('supplier')&&/purchase order|\bpo\b/.test(t))add(c,valid,'sup_po');
+    if(roles.includes('supplier')&&/early payment|\bep\b/.test(t))add(c,valid,'sup_ep');
+  } return [...new Set(c)];}
+function add(c,valid,id){if(valid.some(p=>p.id===id))c.push(id);}
+function detErp(t){for(const e of R.erps)if(t.includes(e.id))return e.id;
+  if(/s\/?4.*priv/.test(t))return 's4priv';if(/s\/?4.*pub/.test(t))return 's4pub';
+  if(t.includes('ecc'))return 'ecc';if(t.includes('oracle'))return 'oracle';return null;}
+function detScale(t){
+  let bu=null, ids=null;
+  let m=t.match(/(\d+)\s*(business unit|bu\b|company cod)/); if(m)bu=parseInt(m[1]);
+  if(/single business unit|one business unit/.test(t))bu=1;
+  // clientIds: explicit "N clientId(s)/system(s)", or "clientids: N", or default → 1
+  m=t.match(/(\d+)\s*(client ?id|source system|erp system)/); if(m)ids=parseInt(m[1]);
+  if(ids==null){ m=t.match(/client ?ids?\s*[:=]?\s*(?:default\s*\(?)?(\d+)/); if(m)ids=parseInt(m[1]); }
+  if(ids==null && /client ?ids?\s*[:=]?\s*default|just 1 client|one client|single client|default \(1\)|1 client|1 system/.test(t)) ids=1;
+  return {bu,ids};}
+function detConn(t,erp){for(const c of R.connectivityTypes)if(t.includes(c.id))return c.id;
+  if(/\bas2\b/.test(t))return 'as2';
+  if(/sftp.*push|push.*sftp/.test(t))return 'sftp_push';
+  if(/sftp.*pull|pull.*sftp/.test(t))return 'sftp_pull';
+  if(/\bsftp\b/.test(t))return 'sftp_push';
+  if(/http post|https post/.test(t))return 'http_post';
+  if(/\bsoap\b/.test(t)&&!ciErp.has(erp))return 'soap';
+  if(ciErp.has(erp)){if(t.includes('idoc'))return 'ci_idoc';if(t.includes('odata'))return 'ci_odata';
+    if(t.includes('rfc'))return 'ci_rfc';if(t.includes('cloud integration'))return 'ci_idoc';}
+  return null;}
+function detFmt(t){if(/peppol|bis 3|bis3/.test(t))return 'peppol_bis3';if(/cxml/.test(t))return 'cxml';
+  if(/idoc[- ]?xml/.test(t))return 'idoc_xml';if(/\bxml\b/.test(t))return 'xml';
+  if(/edifact|\bedi\b/.test(t))return 'edifact';if(/fixed[- ]?length|fixed[- ]?width|flat/.test(t))return 'fixed_length';
+  if(/csv|delimited/.test(t))return 'csv';if(/json/.test(t))return 'json';return null;}
+function detSign(t){if(/taulia_sbi|taulia sbi|\bsbi\b|secure buyer/.test(t))return 'taulia_sbi';
+  if(/self_signing|self.?sign/.test(t))return 'self_signing';return null;}
+function detAuth(t){if(t.includes('oauth'))return 'oauth';if(/mtls|mutual tls/.test(t))return 'mtls';
+  if(/api ?key/.test(t))return 'apikey';if(t.includes('hmac'))return 'hmac';return null;}
+const isSignOff=t=>/sign.?off|signed off|approve|approved|looks good|go ahead|generate|confirm|proceed/.test(t);
+
+function advisorReply(){
+  const all=history.join('\n');
+  const tenant=detTenant(all);
+  const dirs=tenant?detDirections(all,tenant):[];
+  const roles=tenant?rolesFromTenant(tenant,dirs):[];
+  const products=roles.length?detProducts(all,roles):[];
+  const erp=detErp(all);
+  const scale=detScale(all);
+  const conn=erp?detConn(all,erp):null;
+  const fmt=detFmt(all);
+  const needSign=signingRequired(products);
+  const sign=detSign(all);
+  const auth=detAuth(all);
+  const last=history[history.length-1]||'';
+  if(!tenant) return {text:askTenant()};
+  if(tenant==='buyer'&&!dirs.length) return {text:askDirections()};
+  if(!products.length) return {text:askProducts(roles,tenant,dirs)};
+  if(!erp) return {text:askErp(products)};
+  if(scale.bu==null) return {text:askBU()};
+  if(scale.ids==null && !/default|just 1|one client|single client|1 client|1 system/.test(all)) {
+    // clientIds defaults to 1 — accept an explicit answer or a 'default' acknowledgement
+    return {text:askClientIds()};
+  }
+  if(!conn) return {text:askConn(erp)};
+  if(!fmt) return {text:askFmt(conn)};
+  if(needSign && !sign) return {text:askSign()};
+  if(!auth) return {text:askAuth()};
+  if(!isSignOff(last)) return {text:summary(tenant,dirs,roles,products,erp,scale,conn,fmt,needSign?sign:null,auth)};
+  const prof=buildProfile(tenant,dirs,roles,products,erp,scale,conn,fmt,needSign?sign:null,auth);
+  gateProfile=prof;
+  return {text:gateText(prof),gate:true,profile:prof};
+}
+function askTenant(){return "Let's scope this customer. First — what kind of tenant is this?\n\n• buyer — a buyer tenant (AP, and optionally AR documents). If they also do AR (acting as a supplier for receivables) that stays in the buyer tenant.\n• supplier — a standalone supplier, with its own tuning, separate from any buyer tenant.";}
+function askDirections(){return "Buyer tenant. Which document directions are in scope?\n\n• AP documents — payables (invoices, payments, early payments)\n• AR documents — receivables, i.e. the customer also acting as a supplier within this buyer tenant\n\nYou can pick AP, AR, or both.";}
+function askProducts(roles,tenant,dirs){const v=productsForRoles(roles);
+  const head=tenant==='supplier'?"Standalone supplier. Supplier-side products — are you sending invoices and POs, do you accept PO acknowledgement, early payment requests?"
+    :("Buyer tenant ("+dirs.map(d=>d.toUpperCase()).join(' + ')+"). Which products are in scope?");
+  return head+"\n\n"+v.map(p=>"• "+p.id+" — "+p.label).join("\n");}
+function askErp(products){return "Captured: "+products.map(productLabel).join(', ')+".\n\nWhat's the source ERP?\n• SAP (s4pub, s4priv, ecc) → CI-managed available\n• Else (oracle, other_erp, custom) → Direct API / file transport";}
+function askBU(){return "How many business units are in scope, and what are their unique numbers? (e.g. \"2 business units: BU1000, BU2000\")";}
+function askClientIds(){return "How many clientIds? Each clientId represents a source system. Defaults to 1 — reply with a number, or say \"default\".";}
+function askConn(erp){const opts=connForErp(erp).map(c=>"• "+c.id+" — "+c.label).join("\n");
+  return erpLabel(erp)+" → "+pathFor(erp)+". What's the connectivity method? (Email is not supported — too insecure.)\n\n"+opts;}
+function askFmt(conn){return connMethod(conn)+". What file/payload format?\n\n"+R.fileFormats.map(f=>"• "+f.id+" — "+f.label).join("\n");}
+function askSign(){return "Early payments are in scope, so the signed interfaces (supplier master, invoice, early-payment acknowledgement) must be signed. Which signing model?\n\n• taulia_sbi — Taulia Secure Buyer Integration agent signs (x509 SHA-256, RSA 2048)\n• self_signing — the customer self-signs sensitive data before sending";}
+function askAuth(){return "Last area — auth method for the EBI calls? Every call carries x-tau-rest-apikey + x-tau-rest-signature (HMAC-SHA256):\n\n• hmac — direct HMAC-SHA256\n• oauth — OAuth 2.0 (APIM-fronted)\n• apikey — APIM key (simplest)\n• mtls — X.509 client cert";}
+function summary(tenant,dirs,roles,products,erp,scale,conn,fmt,sign,auth){
+  return "Full scope for the customer:\n\nTenant: "+tenantLabel(tenant)+(tenant==='buyer'?" ("+dirs.map(d=>d.toUpperCase()).join(' + ')+")":"")+
+  "\nProducts:\n"+products.map(p=>"  • "+productLabel(p)+" ("+p+")").join("\n")+
+  "\nERP: "+erpLabel(erp)+" ("+erp+") → "+pathFor(erp)+
+  "\nBusiness units: "+scale.bu+(scale.buNums&&scale.buNums.length?" ("+scale.buNums.join(', ')+")":"")+
+  "\nclientIds: "+scale.ids+
+  "\nConnectivity: "+connMethod(conn)+
+  "\nFile format: "+fmtLabel(fmt)+
+  (sign?"\nSigning: "+signLabel(sign):"\nSigning: none (no signed data in scope)")+
+  "\nAuth: "+authLabel(auth)+
+  "\n\nOn sign-off I'll generate the bundle including a customer-facing Technical Solution Design (TSD) with an acceptance sign-off block. Reply \"sign off\" to proceed. Nothing is generated until you sign off.";}
+function buildProfile(tenant,dirs,roles,products,erp,scale,conn,fmt,sign,auth){return {ready_for_generation:true,
+  customer:{name:'Acme Industries',slug:'acme-industries'},tenantType:tenant,documentDirections:dirs,roles,products,erp,
+  integrationPath:pathFor(erp),connectivity:conn,fileFormat:fmt,signing:sign,
+  scale:{businessUnitCount:scale.bu,businessUnitNumbers:scale.buNums||[],clientIds:scale.ids},
+  auth,notes:'Scoped via Connect Advisor.'};}
+function gateText(p){return "Signed off — generating the new-customer-setup bundle now. ✅\n\n```json\n"+JSON.stringify(p,null,2)+"\n```";}
+
+/* business-unit numbers parsing (separate so detScale stays simple) */
+function parseBUNums(t){const m=t.match(/\b(?:BU|CC|comp(?:any)? ?code)?\s*[#:]?\s*([A-Z]{0,3}\d{3,6})\b/gi);
+  return m?[...new Set(m.map(s=>s.trim()).filter(s=>/\d{3,}/.test(s)))]:[];}
+
+/* ── generators ─────────────────────────────────────────────────────────────── */
+function nMethod(m){m=m.toUpperCase();return m==='DEL'?'DELETE':m;}
+function urlNode(raw){const p=raw.replace(/^\//,'');const segs=p.split('/').filter(Boolean);
+  return {raw:'{{baseUrl}}/'+p.replace(/\{([^}]+)\}/g,'{{$1}}'),host:['{{baseUrl}}'],path:segs.map(s=>s.replace(/\{([^}]+)\}/g,'{{$1}}'))};}
+function hasAck(poll,sib){const b=poll.replace(/\{[^}]+\}/g,'').replace(/\/+$/,'');
+  return sib.some(f=>{if(f.dir!=='ack')return false;const a=f.ep.split(/\s+/)[1].replace(/\{[^}]+\}/g,'').replace(/\/+$/,'');return a.startsWith(b)||b.startsWith(a);});}
+function ebiHeaders(){return [{key:'x-tau-rest-signature',value:'{{signature}}',type:'text'},{key:'date',value:'{{date}}',type:'text'},
+  {key:'Content-Type',value:'application/json',type:'text'},{key:'x-tau-erp-client-id',value:'{{erpClientId}}',type:'text'},
+  {key:'x-tau-integration-source',value:'{{integrationSource}}',type:'text'},{key:'x-tau-integration-source-version',value:'{{integrationSourceVersion}}',type:'text'}];}
+function variables(p){const v=[{key:'baseUrl',value:'https://api.taulia.com',type:'string'},{key:'apiKey',value:'',type:'string'},
+  {key:'hmacSecret',value:'',type:'string'},{key:'signature',value:'',type:'string'},{key:'date',value:'',type:'string'},
+  {key:'erpClientId',value:erpClientHint(p.erp),type:'string'},{key:'integrationSource',value:intSource(p.erp),type:'string'},
+  {key:'integrationSourceVersion',value:'1.0.0',type:'string'}];
+  if(p.auth==='oauth')v.push({key:'tokenUrl',value:'',type:'string'},{key:'clientId',value:'',type:'string'},{key:'clientSecret',value:'',type:'string'});
+  v.push({key:'id',value:'',type:'string'});return v;}
+function reqItem(f,sib){const[rm,rp]=f.ep.split(/\s+/,2);const m=nMethod(rm);const d=f.dir.toUpperCase();
+  const it={name:d+'  '+rm+' '+rp,request:{method:m,header:ebiHeaders(),url:urlNode(rp)}};
+  if(m==='POST'||m==='PUT')it.request.body={mode:'raw',raw:'[\n  {\n    "_comment": "Replace with the '+d+' payload for '+rp+'"\n  }\n]',options:{raw:{language:'json'}}};
+  it.request.description=d+' — '+rm+' '+rp;
+  if(f.dir==='poll'&&hasAck(rp,sib))it.event=[{listen:'test',script:{type:'text/javascript',exec:['try{const d=pm.response.json();const a=Array.isArray(d)?d:(d.data||d.notifications||d.documentIds||[]);if(a.length){const id=(typeof a[0]==="string")?a[0]:(a[0].id||a[0].notificationId||a[0].transactionId);if(id)pm.collectionVariables.set("id",id);}}catch(e){}']}}];
+  return it;}
+function collectionEvents(){return [{listen:'prerequest',script:{type:'text/javascript',exec:[
+  '// Connect Advisor — EBI request signing','const now=new Date().toISOString();','pm.collectionVariables.set("date",now);',
+  'const method=pm.request.method.toUpperCase();','const rawUrl=pm.request.url.getPath();',
+  'const apiKey=pm.collectionVariables.get("apiKey")||"";','const secret=pm.collectionVariables.get("hmacSecret")||"";',
+  'const body=(pm.request.body&&pm.request.body.raw)?pm.request.body.raw:"";',
+  'const canonical=[method,rawUrl,now,apiKey,body].join("\\n");',
+  'const sig=CryptoJS.HmacSHA256(canonical,secret).toString(CryptoJS.enc.Base64);','pm.collectionVariables.set("signature",sig);']}}];}
+function genCollection(p){const root={info:{name:p.customer.name+' — Taulia EBI',_postman_id:uuid(),
+  description:'Generated by Connect Advisor for '+p.customer.name+' (EBI v4.8.0). Tenant: '+tenantLabel(p.tenantType)+'. ERP: '+erpLabel(p.erp)+'. Connectivity: '+connMethod(p.connectivity)+'. File format: '+fmtLabel(p.fileFormat)+'. Auth: '+authLabel(p.auth)+'. Every request carries the EBI HMAC headers; the pre-request script stamps date + signature. Secrets are placeholders.',
+  schema:'https://schema.getpostman.com/json/collection/v2.1.0/collection.json'},
+  event:collectionEvents(),auth:{type:'apikey',apikey:[{key:'key',value:'x-tau-rest-apikey',type:'string'},{key:'value',value:'{{apiKey}}',type:'string'},{key:'in',value:'header',type:'string'}]},
+  variable:variables(p),item:[]};
+  p.products.forEach(pid=>{const fl=F[pid]||[];root.item.push({name:productLabel(pid),item:fl.map(f=>reqItem(f,fl))});});
+  return root;}
+function genEnvironment(p){const vals=[{key:'baseUrl',value:'https://api.sandbox.taulia.com',type:'default',enabled:true},
+  {key:'apiKey',value:'',type:'secret',enabled:true},{key:'hmacSecret',value:'',type:'secret',enabled:true},
+  {key:'signature',value:'',type:'secret',enabled:false},{key:'date',value:'',type:'default',enabled:false},
+  {key:'erpClientId',value:erpClientHint(p.erp),type:'default',enabled:true},
+  {key:'integrationSource',value:intSource(p.erp),type:'default',enabled:true},
+  {key:'integrationSourceVersion',value:'1.0.0',type:'default',enabled:true},{key:'id',value:'',type:'default',enabled:false}];
+  if(p.auth==='oauth')vals.push({key:'tokenUrl',value:'',type:'default',enabled:true},{key:'clientId',value:'',type:'secret',enabled:true},{key:'clientSecret',value:'',type:'secret',enabled:true});
+  return {id:uuid(),name:p.customer.name+' — Taulia EBI (sandbox)',_postman_variable_scope:'environment',values:vals,_postman_exported_using:'Connect Advisor'};}
+function uuid(){return 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g,()=>(Math.random()*16|0).toString(16));}
+
+function genBuildRequest(p){const ci=ciConn.has(p.connectivity);const file=fileConn.has(p.connectivity);const adapter=connAdapter(p.connectivity);const needsMap=p.fileFormat!=='json';
+  const m={requestVersion:'1.0',generatedBy:'Connect Advisor',
+    intent:'CI package build request — what SAP Integration Suite needs to build this customer package and get them started rapidly.',
+    customer:{name:p.customer.name,slug:p.customer.slug},
+    target:{ciManaged:ci,fileTransport:file,runtime:ci?'SAP Integration Suite (Cloud Integration)':(file?'File transport ('+connMethod(p.connectivity)+')':'Direct API'),packageId:'TauliaConnect_'+p.customer.slug.replace(/[^a-zA-Z0-9]/g,'_')},
+    connectivity:{id:p.connectivity,method:connMethod(p.connectivity),senderAdapter:ci?adapter:connLabel(p.connectivity),receiverAdapter:'HTTPS → Taulia EBI',fileFormat:p.fileFormat,requiresMapping:needsMap},
+    scale:{businessUnits:p.scale.businessUnitCount,businessUnitNumbers:p.scale.businessUnitNumbers,clientIds:p.scale.clientIds},
+    signing:p.signing?{mode:p.signing,signedInterfaces:R.signedInterfaces.map(si=>({id:si.id,label:si.label,signatureInput:si.signatureInput}))}:{mode:'none'},
+    auth:{method:p.auth,backend:'HMAC-SHA256 (x-tau-rest-apikey + x-tau-rest-signature)'},
+    iflows:[]};
+  if(needsMap)m.connectivity.mappingNote=fmtLabel(p.fileFormat)+' → JSON message mapping required before the EBI call.';
+  p.products.forEach(pid=>{const steps=[{type:'sender',adapter:ci?adapter:(file?connLabel(p.connectivity):'HTTPS'),source:ci?'ERP':(file?'Customer file drop':'Customer middleware')}];
+    if(needsMap)steps.push({type:'messageMapping',from:p.fileFormat,to:'json'});
+    if(p.signing)steps.push({type:'signing',mode:p.signing,algorithm:'x509 SHA-256 / RSA 2048'});
+    steps.push({type:'requestSigning',algorithm:'HMAC-SHA256'},{type:'receiver',adapter:'HTTPS',target:'Taulia EBI v4.8.0'});
+    const eps=(F[pid]||[]).map(f=>{const pr=f.ep.split(/\s+/,2);return {direction:f.dir.toUpperCase(),method:pr[0]==='DEL'?'DELETE':pr[0],path:pr[1]||'/'};});
+    m.iflows.push({id:'iflow_'+pid,name:productLabel(pid),product:pid,renameTemplate:'TauliaConnect_'+p.customer.slug+'_'+pid,steps,endpoints:eps});});
+  return m;}
+
+function checklistMD(p){const ci=ciErp.has(p.erp);let s='';
+  s+='# Implementation Checklist — '+p.customer.name+'\n\n_Generated by Connect Advisor. Scope confirmed by Professional Services sign-off._\n\n';
+  s+='**Tenant:** '+tenantLabel(p.tenantType)+(p.tenantType==='buyer'?' ('+p.documentDirections.map(d=>d.toUpperCase()).join(' + ')+')':'')+'  \n';
+  s+='**ERP:** '+erpLabel(p.erp)+' (`'+p.erp+'`)  \n**Connectivity:** '+connMethod(p.connectivity)+'  \n**File format:** '+fmtLabel(p.fileFormat)+'  \n';
+  s+='**Business units:** '+p.scale.businessUnitCount+(p.scale.businessUnitNumbers.length?' ('+p.scale.businessUnitNumbers.join(', ')+')':'')+'  \n**clientIds:** '+p.scale.clientIds+'  \n';
+  if(p.signing)s+='**Signing:** '+signLabel(p.signing)+'  \n';
+  s+='**Auth:** '+authLabel(p.auth)+'  \n\n---\n\n';
+  s+='## 1. Connectivity & path\n\n';
+  if(ci)s+='- [ ] Confirm SAP Integration Suite tenant provisioned\n- [ ] Deploy the CI package (from the build request)\n- [ ] Configure the **'+connAdapter(p.connectivity)+'** adapter\n';
+  else if(fileConn.has(p.connectivity))s+='- [ ] Set up **'+connMethod(p.connectivity)+'** transport (keys/certs as required)\n- [ ] Confirm file drop / pickup locations\n';
+  else s+='- [ ] Implement HTTPS client against the Taulia EBI `{{baseUrl}}`\n';
+  if(p.fileFormat!=='json')s+='- [ ] Configure **'+fmtLabel(p.fileFormat)+' → JSON** mapping\n';
+  s+='\n## 2. Authentication\n\n- [ ] Issue Taulia API key (`x-tau-rest-apikey`)\n- [ ] Generate HMAC signing secret\n- [ ] Confirm **'+authLabel(p.auth)+'** at APIM\n\n';
+  if(p.signing){s+='## 3. Signing ('+signLabel(p.signing)+')\n\n';
+    if(p.signing==='taulia_sbi')s+='- [ ] Install the Taulia SBI agent (Java 8 + JCE; Linux/Unix; one cert per env)\n- [ ] Provision x509 certificates (UAT + Production)\n';
+    else s+='- [ ] Implement self-signing (x509 SHA-256, RSA 2048) for the signed interfaces\n- [ ] Share the public certificate with Taulia\n';
+    R.signedInterfaces.forEach(si=>{s+='- [ ] Sign **'+si.label+'** using input: `'+si.signatureInput+'`\n';});s+='\n';}
+  s+='## 4. Business units & clientIds\n\n- [ ] Register '+p.scale.businessUnitCount+' business unit(s)'+(p.scale.businessUnitNumbers.length?': '+p.scale.businessUnitNumbers.join(', '):'')+'\n- [ ] Configure '+p.scale.clientIds+' clientId(s) (x-tau-erp-client-id per source system)\n\n';
+  s+='## 5. Per-product tasks\n\n';
+  p.products.forEach(pid=>{s+='### '+productLabel(pid)+' (`'+pid+'`)\n\n';(F[pid]||[]).forEach(f=>{const v={push:'implement outbound send; confirm TicketBatchResponse',poll:'implement scheduled poll',ack:'acknowledge using id from the matching poll'}[f.dir];s+='- [ ] **'+f.dir.toUpperCase()+'** `'+f.ep+'` — '+v+'\n';});s+='\n';});
+  s+='## 6. Sandbox → production\n\n- [ ] End-to-end sandbox run for every flow\n- [ ] Obtain production credentials\n- [ ] Promote / swap to production\n- [ ] Production smoke test\n- [ ] Hand off monitoring\n';
+  return s;}
+
+function tsdMD(p){const ci=ciErp.has(p.erp);const today=new Date().toISOString().slice(0,10);let s='';
+  s+='<!-- BRANDING_SLOT: insert SAP Taulia cover / logo / styling here -->\n\n';
+  s+='# Technical Solution Design (TSD)\n\n## '+p.customer.name+' — Taulia Integration\n\n';
+  s+='_SAP Taulia Professional Services · '+today+' · generated by Connect Advisor · **DRAFT — pending customer acceptance**_\n\n';
+  s+='> This is a customer-facing design covering the **in-scope** integration only. It requires acceptance sign-off (section 9) before implementation work begins.\n\n---\n\n';
+  s+='## 1. Scope\n\nThis document describes the agreed integration between **'+p.customer.name+'** and the Taulia Business Exchange over the External Buyer Integration (EBI) API v4.8.0.\n\n';
+  s+='- **Tenant type:** '+tenantLabel(p.tenantType)+(p.tenantType==='buyer'?' — handling '+p.documentDirections.map(d=>d.toUpperCase()).join(' and ')+' documents':'')+'\n';
+  if(p.tenantType==='buyer'&&p.documentDirections.includes('ar'))s+='  - AR documents (the customer also acting as a supplier for receivables) are handled **within this buyer tenant**.\n';
+  s+='- **Source ERP:** '+erpLabel(p.erp)+' (`'+p.erp+'`)\n- **In-scope products:** '+p.products.map(productLabel).join(', ')+'\n\n';
+  s+='## 2. Architecture\n\n';
+  if(ci)s+='Integration runs **CI-managed** on SAP Integration Suite (Cloud Integration), '+connMethod(p.connectivity)+' on the sender side, HTTPS + HMAC to the Taulia EBI on the receiver side.\n\n```\n'+erpLabel(p.erp)+'  --'+connAdapter(p.connectivity)+'-->  SAP Cloud Integration  --HTTPS + HMAC-->  Taulia EBI v4.8.0\n```\n\n';
+  else if(fileConn.has(p.connectivity))s+='Integration uses **'+connMethod(p.connectivity)+'** file transport between '+p.customer.name+' and Taulia.\n\n```\n'+p.customer.name+'  --'+connLabel(p.connectivity)+'-->  Taulia Business Exchange (EBI v4.8.0)\n```\n\n';
+  else s+='Integration uses the **Direct API** path: customer middleware calls the Taulia EBI directly.\n\n';
+  s+='## 3. Connectivity & file format\n\n| | |\n|---|---|\n| Connectivity | '+connMethod(p.connectivity)+' |\n| File format | '+fmtLabel(p.fileFormat)+' |\n| Authentication | '+authLabel(p.auth)+' (EBI HMAC-SHA256 header pair) |\n\n';
+  if(p.fileFormat!=='json')s+='A message mapping converts **'+fmtLabel(p.fileFormat)+'** to the JSON the EBI expects.\n\n';
+  s+='_Note: email is not a supported transport — too insecure for financial data._\n\n';
+  s+='## 4. Signing\n\n';
+  if(p.signing){s+='Early payments are in scope, so the signed interfaces below must be signed using **'+signLabel(p.signing)+'**'+(p.signing==='taulia_sbi'?' (Taulia\'s on-premise SBI agent)':' (customer self-signing)')+'. Signatures use an x509 certificate (SHA-256, RSA 2048).\n\n';
+    s+='| Signed interface | Signature input (field order) |\n|---|---|\n';
+    R.signedInterfaces.forEach(si=>{s+='| '+si.label+' | `'+si.signatureInput+'` |\n';});s+='\n';}
+  else s+='No signed interfaces are in scope (early payments not selected). Standard EBI HMAC request signing applies to all calls.\n\n';
+  s+='## 5. In-scope interfaces\n\n| Product | Direction(s) |\n|---|---|\n';
+  p.products.forEach(pid=>{const dirs=[...new Set((F[pid]||[]).map(f=>f.dir.toUpperCase()))].join(', ');s+='| '+productLabel(pid)+' | '+dirs+' |\n';});
+  s+='\nPUSH = customer → Taulia · POLL = customer pulls pending · ACK = customer acknowledges.\n\n';
+  s+='## 6. Business units & systems\n\n- **Business units:** '+p.scale.businessUnitCount+(p.scale.businessUnitNumbers.length?' — '+p.scale.businessUnitNumbers.join(', '):'')+'\n- **clientIds (source systems):** '+p.scale.clientIds+' (each carried as `x-tau-erp-client-id`)\n\n';
+  s+='## 7. Environments\n\n- Sandbox / UAT for end-to-end validation, then production promotion.\n'+(p.signing?'- One signing certificate per environment (UAT + Production).\n':'')+'\n';
+  s+='## 8. Assumptions & out of scope\n\n- Only the products listed in section 5 are in scope.\n- Out-of-scope documents and non-listed connectivity are excluded from this design.\n\n';
+  s+='## 9. Acceptance sign-off\n\nBy signing below, '+p.customer.name+' accepts this technical solution design as the basis for implementation work.\n\n';
+  s+='| | Name | Title | Signature | Date |\n|---|---|---|---|---|\n| **Customer** |  |  |  |  |\n| **Taulia PS** |  |  |  |  |\n\n';
+  s+='**Status:** ☐ Accepted for work ☐ Changes requested\n\n---\n\n_SAP Taulia · Professional Services · generated by Connect Advisor — branding to be applied_\n';
+  return s;}
+
+function guideMD(p){const ci=ciConn.has(p.connectivity);const today=new Date().toISOString().slice(0,10);let s='';
+  s+='# SAP Taulia — Integration & Onboarding Guide\n\n## '+p.customer.name+'\n\n_Prepared by Taulia Professional Services · '+today+'_\n\n---\n\n';
+  s+='## At a glance\n\n| | |\n|---|---|\n| Tenant | '+tenantLabel(p.tenantType)+' |\n| ERP | '+erpLabel(p.erp)+' |\n| Connectivity | '+connMethod(p.connectivity)+' |\n| File format | '+fmtLabel(p.fileFormat)+' |\n| Signing | '+(p.signing?signLabel(p.signing):'none')+' |\n| Auth | '+authLabel(p.auth)+' |\n\n';
+  s+='## Getting started\n\n1. Import the Postman collection + environment.\n2. Set `baseUrl`, `apiKey`, `hmacSecret`, `erpClientId`.\n3. Run a POLL to confirm auth.\n4. Run a PUSH and confirm the TicketBatchResponse.\n';
+  if(ci)s+='5. Deploy the CI package (from the build request).\n';
+  if(p.signing)s+=(ci?'6':'5')+'. Stand up signing ('+signLabel(p.signing)+') for the signed interfaces.\n';
+  s+='\nSee the TSD (for acceptance), the implementation checklist, and the platform admin runbook in this bundle.\n\n---\n_SAP Taulia · Professional Services · Connect Advisor_\n';
+  return s;}
+
+function adminMD(p){const today=new Date().toISOString().slice(0,10);let s='';
+  s+='# Taulia Platform — Admin Setup\n\n## New customer: '+p.customer.name+'\n\n_PS admin runbook · '+today+' · printable_\n\n---\n\n';
+  s+='## 1. Customer & tenant\n\n- [ ] Create customer **'+p.customer.name+'** (slug `'+p.customer.slug+'`)\n- [ ] Tenant type: **'+tenantLabel(p.tenantType)+'**'+(p.tenantType==='buyer'?' ('+p.documentDirections.map(d=>d.toUpperCase()).join(' + ')+')':'')+'\n- [ ] Enable roles: '+p.roles.map(r=>'`'+r+'`').join(', ')+'\n\n';
+  s+='## 2. ERP, business units, clientIds\n\n- [ ] Source ERP **'+erpLabel(p.erp)+'** (`'+p.erp+'`); integration source `'+intSource(p.erp)+'`\n- [ ] Register '+p.scale.businessUnitCount+' business unit(s)'+(p.scale.businessUnitNumbers.length?': '+p.scale.businessUnitNumbers.join(', '):'')+'\n- [ ] Configure '+p.scale.clientIds+' clientId(s) — one x-tau-erp-client-id per source system\n\n';
+  s+='## 3. Connectivity\n\n- [ ] Set up **'+connMethod(p.connectivity)+'** ('+(ciConn.has(p.connectivity)?'CI adapter '+connAdapter(p.connectivity):(fileConn.has(p.connectivity)?'file transport — keys/certs':'direct HTTPS'))+')\n';
+  if(p.fileFormat!=='json')s+='- [ ] Confirm '+fmtLabel(p.fileFormat)+' → JSON mapping\n';
+  s+='\n## 4. Authentication & signing\n\n- [ ] Issue API key (`x-tau-rest-apikey`); generate HMAC secret\n- [ ] Enable **'+authLabel(p.auth)+'** at APIM\n';
+  if(p.signing){if(p.signing==='taulia_sbi')s+='- [ ] Provision the Taulia SBI agent + x509 certs (UAT + Production)\n';else s+='- [ ] Register the customer self-signing public certificate\n';}
+  s+='\n## 5. Products\n\n';p.products.forEach(pid=>{s+='- [ ] Enable **'+productLabel(pid)+'** (`'+pid+'`)\n';});
+  s+='\n## 6. Validate\n\n- [ ] Sandbox POLL + PUSH\n- [ ] Share Postman bundle + TSD for acceptance\n- [ ] Schedule production promotion\n\n---\n_SAP Taulia · Professional Services · Connect Advisor_\n';
+  return s;}
+
+/* ── UI wiring ──────────────────────────────────────────────────────────────── */
+const chat=document.getElementById('chat'),input=document.getElementById('input'),slotsEl=document.getElementById('slots'),scriptbar=document.getElementById('scriptbar');
+const SCRIPT=[
+  "We're scoping Acme Industries — a buyer tenant.",
+  "AP and AR documents (they also act as a supplier for receivables, in the same tenant).",
+  "In scope: invoices_ap, purchase_orders, early_payments on AP, plus receivables on AR.",
+  "Their ERP is s4priv (S/4HANA private cloud).",
+  "2 business units: BU1000, BU2000.",
+  "clientIds: default (1).",
+  "Connectivity is sftp_push.",
+  "File format is csv.",
+  "Signing: taulia_sbi.",
+  "Auth method is hmac.",
+  "Looks right — show me the summary.",
+  "sign off"
+];
+let scriptIdx=0;
+function md(t){return t.replace(/`([^`]+)`/g,'<code>$1</code>');}
+function bubble(text,cls){const d=document.createElement('div');d.className='msg '+cls;
+  if(text.includes('```json')){const parts=text.split('```json');d.innerHTML=md(parts[0])+'<pre class="preview" style="margin-top:8px">'+parts[1].replace('```','').trim()+'</pre>';}
+  else d.innerHTML=md(text);chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d;}
+function renderSlots(){const all=history.join('\n');
+  const tenant=detTenant(all),dirs=tenant?detDirections(all,tenant):[],roles=tenant?rolesFromTenant(tenant,dirs):[],
+    products=roles.length?detProducts(all,roles):[],erp=detErp(all),scale=detScale(all),
+    conn=erp?detConn(all,erp):null,fmt=detFmt(all),sign=detSign(all),auth=detAuth(all);
+  const rows=[['tenant',tenant?tenant+(dirs.length?' ('+dirs.join('+')+')':''):''],['products',products.join(', ')],
+    ['erp',erp?erp+' → '+pathFor(erp):''],['businessUnits',scale.bu!=null?String(scale.bu):''],
+    ['clientIds',scale.ids!=null?String(scale.ids):''],['connectivity',conn||''],['fileFormat',fmt||''],
+    ['signing',signingRequired(products)?(sign||'(required)'):'n/a'],['auth',auth||'']];
+  slotsEl.innerHTML=rows.map(([k,v])=>'<div class="slot'+(v&&v!=='(required)'&&v!=='n/a'?' filled':'')+'"><span class="k">'+k+'</span><span class="v">'+(v||'—')+'</span></div>').join('');}
+function renderScript(){scriptbar.innerHTML='';if(gateProfile)return;
+  SCRIPT.slice(scriptIdx,scriptIdx+3).forEach((sv,i)=>{const b=document.createElement('button');
+    b.textContent=(i===0?'▶ ':'')+(sv.length>38?sv.slice(0,38)+'…':sv);if(i===0)b.className='next';
+    b.onclick=()=>{input.value=SCRIPT[scriptIdx];sendMsg();};scriptbar.appendChild(b);});}
+function openGate(p){
+  // attach parsed BU numbers
+  const all=history.join('\n');p.scale.businessUnitNumbers=parseBUNums(all.toUpperCase());
+  document.getElementById('gatedot').className='dot open';
+  document.getElementById('gatelabel').textContent='OPEN — consultant signed off';
+  document.getElementById('gatemsg').innerHTML='Gate opened. Fan-out fired to all generators. The TSD still needs <b>customer acceptance</b> (section 9).';
+  bundle={profile:p,collection:genCollection(p),environment:genEnvironment(p),checklist:checklistMD(p),
+    tsd:tsdMD(p),guide:guideMD(p),admin:adminMD(p),buildRequest:genBuildRequest(p)};
+  showArtifacts();}
+function profileOut(p){return {readyForGeneration:true,customer:p.customer,tenantType:p.tenantType,documentDirections:p.documentDirections,roles:p.roles,products:p.products,erp:p.erp,integrationPath:p.integrationPath,connectivity:p.connectivity,fileFormat:p.fileFormat,signing:p.signing,scale:p.scale,auth:p.auth,notes:p.notes};}
+function dl(name,content,type){const b=new Blob([content],{type});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
+function showArtifacts(){
+  document.getElementById('artpanel').style.display='';
+  const slug=bundle.profile.customer.slug;const folders=bundle.collection.item.length;
+  const reqs=bundle.collection.item.reduce((s,f)=>s+f.item.length,0);const J=o=>JSON.stringify(o,null,2);
+  window._arts=[
+    {ic:'{}',c:'#0a6ed1',nm:'profile.json',sub:'confirmed profile (project file)',fn:slug+'.profile.json',body:J(profileOut(bundle.profile)),type:'application/json'},
+    {ic:'📐',c:'#c35a00',nm:'technical-solution-design.md',sub:'customer-facing TSD · acceptance sign-off',fn:'technical-solution-design.md',body:bundle.tsd,type:'text/markdown'},
+    {ic:'⇄',c:'#7c2d12',nm:slug+'.postman_collection.json',sub:folders+' folders · '+reqs+' requests · EBI v2.1',fn:slug+'.postman_collection.json',body:J(bundle.collection),type:'application/json'},
+    {ic:'⚙',c:'#5b3fa0',nm:slug+'.postman_environment.json',sub:'paired Postman environment',fn:slug+'.postman_environment.json',body:J(bundle.environment),type:'application/json'},
+    {ic:'✓',c:'#107e3e',nm:'implementation-checklist.md',sub:'consultant hand-off checklist',fn:'implementation-checklist.md',body:bundle.checklist,type:'text/markdown'},
+    {ic:'📘',c:'#0a6ed1',nm:'integration-guide.md',sub:'SAP Taulia onboarding guide',fn:'integration-guide.md',body:bundle.guide,type:'text/markdown'},
+    {ic:'🛠',c:'#c35a00',nm:'platform-admin-setup.md',sub:'admin runbook (printable)',fn:'platform-admin-setup.md',body:bundle.admin,type:'text/markdown'},
+    {ic:'📦',c:'#5b3fa0',nm:'ci-package-build-request.json',sub:'CAP → SAP Integration Suite builder',fn:'ci-package-build-request.json',body:J(bundle.buildRequest),type:'application/json'}
+  ];
+  document.getElementById('arts').innerHTML=window._arts.map((a,i)=>'<div class="art"><div class="ic" style="background:'+a.c+'">'+a.ic+'</div><div class="nm">'+a.nm+'<small>'+a.sub+'</small></div><button class="view" data-v="'+i+'">View</button><button data-d="'+i+'">Download</button></div>').join('');
+  document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const a=window._arts[+b.dataset.d];dl(a.fn,a.body,a.type);});
+  document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{const a=window._arts[+b.dataset.v];document.getElementById('pvtitle').textContent='Preview — '+a.nm;document.getElementById('preview').textContent=a.body;});
+  document.getElementById('pvtitle').textContent='Preview — '+window._arts[1].nm;document.getElementById('preview').textContent=window._arts[1].body;
+  document.getElementById('dlall').onclick=()=>window._arts.forEach((a,i)=>setTimeout(()=>dl(a.fn,a.body,a.type),i*220));}
+function sendMsg(){const v=input.value.trim();if(!v)return;
+  bubble(v,'user');history.push(v.toLowerCase());input.value='';
+  if(SCRIPT[scriptIdx]&&v.toLowerCase()===SCRIPT[scriptIdx].toLowerCase())scriptIdx++;
+  renderSlots();
+  setTimeout(()=>{const r=advisorReply();bubble(r.text,r.gate?'bot gate':'bot');if(r.gate&&r.profile)openGate(r.profile);renderScript();},190);}
+function reset(){history=[];gateProfile=null;bundle=null;scriptIdx=0;chat.innerHTML='';
+  document.getElementById('artpanel').style.display='none';document.getElementById('gatedot').className='dot';
+  document.getElementById('gatelabel').textContent='Closed — awaiting sign-off';
+  document.getElementById('gatemsg').innerHTML='No artifact is generated until the consultant explicitly signs off. The gate opens only when a valid <code>ready_for_generation</code> profile block is emitted.';
+  renderSlots();bubble(askTenant(),'bot');renderScript();input.focus();}
+document.getElementById('send').onclick=sendMsg;
+document.getElementById('reset').onclick=reset;
+input.addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg();});
+const root=document.documentElement;
+document.getElementById('themebtn').onclick=()=>{root.setAttribute('data-theme',root.getAttribute('data-theme')==='light'?'dark':'light');};
+reset();
+</script>
+</body>
+</html>
